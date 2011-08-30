@@ -1,5 +1,7 @@
 module Main where
 
+import qualified Random as R
+
 -- 1. Find the last element of a list
 myLast :: [a] -> a
 myLast = head . reverse
@@ -118,3 +120,37 @@ remove :: [a] -> Int -> (a, [a])
 remove (x:xs) 0 = (x, xs)
 remove []     _ = error "Index out of bounds"
 remove (x:xs) k = let (x', xs') = remove xs $ k-1 in (x', x:xs')
+
+-- 21. Insert an element at a given position into a list.
+insertAt :: a -> Int -> [a] -> [a]
+insertAt item 0 xs            = item:xs
+insertAt item location []     = error "Index out of bounds"
+insertAt item location (x:xs) | location < 0 = error "Index out of bounds"
+                              | otherwise    = x:(insertAt item (location - 1) xs)
+
+-- 22. Create a list containing all integers within a given range
+range low high = [low..high]
+
+-- 23. Extract a given number of randomly selected elements from a list.
+{-randSelect :: Int -> [a] -> IO [a]-}
+
+genUniqRandNum :: Int -> (Int, Int) -> IO [Int]
+genUniqRandNum 0 _ = return []
+genUniqRandNum num (low, high) | num > (high - low + 1) =
+  error "Selected more unique random numbers than possible for the given range."
+                               | otherwise = do
+  genUniqRandNum' num (low,high) $ return []
+
+genUniqRandNum' :: Int -> (Int, Int) -> IO [Int] -> IO [Int]
+genUniqRandNum' num (low, high) xs = do
+  rand <- R.getStdRandom $ R.randomR (low, high)
+  nums <- xs
+  if rand `elem` nums
+     then genUniqRandNum' num (low, high) (return nums)
+     else if length (rand:nums) == num
+             then return (rand:nums)
+             else genUniqRandNum' num (low, high) (return $ rand:nums)
+
+randSelect :: Int -> [a] -> IO [a]
+randSelect num xs = select (genUniqRandNum num (0, length xs)) xs
+  where select ys xs = fmap (map (xs !!)) ys

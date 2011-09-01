@@ -132,8 +132,12 @@ insertAt item location (x:xs) | location < 0 = error "Index out of bounds"
 range low high = [low..high]
 
 -- 23. Extract a given number of randomly selected elements from a list.
-{-randSelect :: Int -> [a] -> IO [a]-}
-
+  -- This implementation could be better in a number of different ways. 
+  -- a) sort the list of random selections so that we can traverse the list once and pick them out,
+  -- rather than retraverse it for every number. O(n^2) -> O(n) improvement.
+  -- b) Rather than create a list of unique integers, generate a number between 0 and length xs and
+  -- then delete that from the list. Repeat this until length xs == the number of entries you want.
+    -- This isn't an asymptotic improvement, however, it just makes the code a bit cleaner.
 genUniqRandNum :: Int -> (Int, Int) -> IO [Int]
 genUniqRandNum 0 _ = return []
 genUniqRandNum num (low, high) | num > (high - low + 1) =
@@ -154,3 +158,18 @@ genUniqRandNum' num (low, high) xs = do
 randSelect :: Int -> [a] -> IO [a]
 randSelect num xs = select (genUniqRandNum num (0, length xs)) xs
   where select ys xs = fmap (map (xs !!)) ys
+
+-- 24. Lotto: Draw N different random numbers from the set 1..M.
+lotto :: Int -> Int -> IO [Int]
+lotto n m = genUniqRandNum n (1, m)
+
+-- 25. Generate a random permutation of the elements of a list.
+randPermutation :: [a] -> IO [a]
+randPermutation xs = select (genUniqRandNum (length xs) (0, length xs - 1)) xs
+  where select ys xs = fmap (map (xs !!)) ys
+
+-- 26. Generate the combinations of K distinct objects chosen from the N elements of a list.
+kcombinations :: Int -> [a] -> [[a]]
+kcombinations 0 xs = [[]]
+kcombinations k [] = []
+kcombinations k (x:xs) = (map (x:) $ kcombinations (k-1) xs) ++ (kcombinations k xs)

@@ -157,7 +157,7 @@ genUniqRandNum' num (low, high) xs = do
 
 randSelect :: Int -> [a] -> IO [a]
 randSelect num xs = select (genUniqRandNum num (0, length xs)) xs
-  where select ys xs = fmap (map (xs !!)) ys
+  where select ys xs = fmap . map (xs !!) ys
 
 -- 24. Lotto: Draw N different random numbers from the set 1..M.
 lotto :: Int -> Int -> IO [Int]
